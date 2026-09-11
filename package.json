@@ -1,0 +1,24 @@
+{
+  "name": "collaborative-canvas",
+  "version": "1.0.0",
+  "description": "Real-Time Multi-User Collaborative Drawing Canvas with Global Undo/Redo",
+  "main": "server/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js"
+  },
+  "keywords": [
+    "canvas",
+    "websockets",
+    "realtime",
+    "collaborative",
+    "undo-redo"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "ws": "^8.17.0"
+  }
+}
