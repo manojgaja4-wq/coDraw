@@ -95,23 +95,40 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==========================================
-  // 2. Network Event Listeners
+  // 2. Network Event Listeners & Standalone Mode
   // ==========================================
   wsClient.on('_connection_change', ({ status }) => {
     connectionBadge.className = `status-badge ${status}`;
     if (status === 'connected') {
-      statusText.textContent = 'Connected';
-      showToast('Connected to CoDraw WebSocket Server!', 'success');
-      // Join target room
+      statusText.textContent = 'Live Connected';
+      showToast('Connected to Live WebSocket Server!', 'success');
       wsClient.send('JOIN_ROOM', { roomId: currentRoomId });
-    } else if (status === 'disconnected') {
-      statusText.textContent = 'Reconnecting...';
-      showToast('Connection lost. Reconnecting...', 'warning');
-    } else if (status === 'failed') {
-      statusText.textContent = 'Offline';
-      showToast('Unable to connect to server.', 'danger');
+    } else if (status === 'disconnected' || status === 'failed' || status === 'error') {
+      statusBadgeToStandalone();
     }
   });
+
+  function statusBadgeToStandalone() {
+    connectionBadge.className = 'status-badge connected';
+    statusText.textContent = 'Standalone Mode';
+    if (!currentUser) {
+      currentUser = {
+        id: 'local_user',
+        username: 'Draw Pad User',
+        color: '#3b82f6'
+      };
+      selfNameEl.textContent = currentUser.username;
+      selfColorDot.style.background = currentUser.color;
+      updateOnlineUsers([currentUser]);
+    }
+  }
+
+  // Fallback to Standalone Mode if offline after 2 seconds
+  setTimeout(() => {
+    if (!wsClient.isConnected) {
+      statusBadgeToStandalone();
+    }
+  }, 1500);
 
   wsClient.on('_latency_update', ({ latency }) => {
     valLatency.textContent = latency;
@@ -349,16 +366,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Actions
   btnUndo.addEventListener('click', () => {
-    wsClient.send('UNDO', { mode: 'global' });
+    if (wsClient.isConnected) {
+      wsClient.send('UNDO', { mode: 'global' });
+    } else {
+      for (let i = canvasEngine.operations.length - 1; i >= 0; i--) {
+        if (!canvasEngine.operations[i].isUndone) {
+          canvasEngine.operations[i].isUndone = true;
+          canvasEngine.redrawMainCanvas();
+          showToast('Undo performed', 'warning');
+          break;
+        }
+      }
+    }
   });
 
   btnRedo.addEventListener('click', () => {
-    wsClient.send('REDO', { mode: 'global' });
+    if (wsClient.isConnected) {
+      wsClient.send('REDO', { mode: 'global' });
+    } else {
+      for (let i = canvasEngine.operations.length - 1; i >= 0; i--) {
+        if (canvasEngine.operations[i].isUndone) {
+          canvasEngine.operations[i].isUndone = false;
+          canvasEngine.redrawMainCanvas();
+          showToast('Redo performed', 'info');
+          break;
+        }
+      }
+    }
   });
 
   btnClear.addEventListener('click', () => {
-    if (confirm('Clear the canvas for all users in this room?')) {
-      wsClient.send('CLEAR_CANVAS');
+    if (confirm('Clear the canvas?')) {
+      if (wsClient.isConnected) {
+        wsClient.send('CLEAR_CANVAS');
+      } else {
+        canvasEngine.operations = [];
+        canvasEngine.redrawMainCanvas();
+        showToast('Canvas cleared', 'danger');
+      }
     }
   });
 
