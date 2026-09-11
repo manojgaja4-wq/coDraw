@@ -1,5 +1,9 @@
 # 🎨 CoDraw - Real-Time Collaborative Drawing Canvas
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-GitHub_Pages-brightgreen?style=for-the-badge&logo=github)](https://manojgaja4-wq.github.io/coDraw/)
+
+> 🌐 **Live Demo URL**: **[https://manojgaja4-wq.github.io/coDraw/](https://manojgaja4-wq.github.io/coDraw/)**
+
 CoDraw is a production-grade, zero-framework multi-user drawing application built with **Vanilla JavaScript/TypeScript**, **HTML5 Canvas**, and **Node.js WebSockets**. It features sub-frame real-time stroke streaming, deterministic global multi-user undo/redo state synchronization, live remote user cursors, room isolation, path smoothing, and PNG/SVG/JSON vector exports.
 
 ---
